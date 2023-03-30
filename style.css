@@ -122,11 +122,14 @@ img{
 #playlist-container{
     background-color: rgb(225, 225, 201);
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 90%;
+    height: 90%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px gray;
+    overflow: auto;
+    scroll-behavior: smooth;
 }
 
 
@@ -137,6 +140,8 @@ img{
     width: 2em;
     cursor: pointer;
     margin-left: 90%;
+    font-size: 20px;
+
 }
 
 ul{
@@ -155,7 +160,8 @@ li{
 }
 
 .playlist-image-container{
-    width: 3em;
+    width: 4em;
+    margin-left: 10px;
 }
 
 .playlist-song-details > span{

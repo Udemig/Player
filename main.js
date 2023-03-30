@@ -13,7 +13,7 @@ const playListButton = document.getElementById('playlist')
 
 
 const maxDuration = document.getElementById('max-duration')
-const currentTime = document.getElementById('current-time')
+const currentTimeRef = document.getElementById('current-time')
 
 const progressBar = document.getElementById('progress-bar')
 const playListContainer = document.getElementById('playlist-container')
@@ -44,7 +44,7 @@ const songsList = [
     },
     {
         name: "Aramam",
-        link: "assets/yara-bere-icindeyim.mp3",
+        link: "assets/aramam.mp3",
         artist: "Ibrahim Tatlises",
         image: "assets/ibrahim-tatlises.jpeg"
     },
@@ -77,7 +77,7 @@ let deviceType = ""
 
 const isTouchDevice = () =>{
     try{
-        document.createEvent("TouchEvent") // create olabilir
+        document.createEvent("TouchEvent") // dokunulur bir cihaz ise burasi olusur
         deviceType = "touch"
         return true
     }catch(e){
@@ -99,6 +99,7 @@ const timeFormatter = (timeInput) =>{
 //sarki atama
 const setSong = (arrayIndex) => {
     //tum ozellikleri cikar
+    console.log(arrayIndex)
     let {name, link, artist, image} = songsList[arrayIndex]
     audio.src = link
     songName.innerHTML = name
@@ -109,13 +110,15 @@ const setSong = (arrayIndex) => {
     audio.onloadedmetadata = () =>{
         maxDuration.innerText = timeFormatter(audio.duration)//230 sn
     }
+    playListContainer.classList.add('hide')
+    playAudio()
 }
 
 //sarkiyi oynat
 const playAudio = () =>{
     audio.play()
-    pauseButton.classList.remove('hide')
-    playButton.classList.add('hide')
+    pauseButton.classList.remove('hide') // gorun
+    playButton.classList.add('hide') // kaybol
 }
 
 
@@ -137,7 +140,7 @@ repeatButton.addEventListener('click',()=>{
 const nextSong = () =>{
     //eger normal caliyorsa sonrakine gec
     if(loop){
-        if(index == songArtist.length - 1){
+        if(index == (songsList.length - 1)){
             //sondaysa basa git
             index = 0
         }else {
@@ -204,9 +207,83 @@ nextButton.addEventListener('click',nextSong)
 //pause button
 pauseButton.addEventListener('click', pauseAudio)
 
-
 //prev button
 prevButton.addEventListener('click', previousSong)
 
+//cihaz tipiniz sec
+isTouchDevice()
+progressBar.addEventListener(events[deviceType].click,(event)=>{
+    //proggress bar i baslat
+    let coordStart = progressBar.getBoundingClientRect().left
+
+    //mouse click yapma noktasi
+    // false
+    let coordEnd = !isTouchDevice() ? event.clientX : event.touches[0].clientX
+    let progress = (coordEnd - coordStart) / progressBar.offsetWidth
+
+    //genisligi progress e ata
+    currentProgress.style.width = progress * 100 + "%"
+
+    //zamani ata
+    audio.currentTime = progress * audio.duration
+
+    //oynat
+    audio.play()
+    pauseButton.classList.remove('hide')
+    playButton.classList.add('hide')
+
+})
 
 
+
+//progress i guncelle zamana gore
+setInterval(()=>{
+    currentTimeRef.innerHTML  = timeFormatter(audio.currentTime)
+    currentProgress.style.width = (audio.currentTime/audio.duration.toFixed(3)) * 100 + "%"
+
+},1000)
+
+//zamani guncelle
+audio.addEventListener('timeupdate',()=>{
+    currentTimeRef.innerText = timeFormatter(audio.currentTime)
+})
+
+//playlist olustur
+const initializePlaylist = () =>{
+    for(let i in songsList){
+        playListSongs.innerHTML += `<li class="playlistSong"
+        onclick="setSong(${i})">
+        <div class="playlist-image-container"> 
+          <img src="${songsList[i].image}"/>
+        </div>
+        <div class="playlist-song-details">
+          <span id="playlist-song-name">
+            ${songsList[i].name}
+          </span>
+          <span id="playlist-song-artist-album">
+            ${songsList[i].artist}
+          </span>
+        </div>
+        </li>`
+    }
+}  
+
+//sarki listesini goster
+playListButton.addEventListener("click",()=>{
+    playListContainer.classList.remove('hide')
+})
+
+//sarki listesini kapat
+closeButton.addEventListener('click',()=>{
+    playListContainer.classList.add('hide')
+})
+
+//ekran yuklenirken
+window.onload = () =>{
+    //baslangic sarkin sirasi
+    index = 0
+    setSong(index)
+    pauseAudio()
+    //playlist olustur
+    initializePlaylist()
+}
